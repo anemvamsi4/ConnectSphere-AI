@@ -54,10 +54,10 @@ function NetworkContent() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">My Professional Network</h1>
-            <p className="text-gray-400 mt-2">Manage and grow your professional connections</p>
+            <h1 className="text-3xl font-bold text-foreground">My Professional Network</h1>
+            <p className="text-muted-foreground mt-2">Manage and grow your professional connections</p>
           </div>
-          <Button className="bg-gray-700 hover:bg-gray-600 text-gray-100">
+          <Button className="bg-accent hover:bg-accent/80 text-accent-foreground">
             <Users className="h-4 w-4 mr-2" />
             Add Connection
           </Button>
@@ -65,82 +65,82 @@ function NetworkContent() {
 
         {/* Additional Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Total Connections</p>
-                  <p className="text-2xl font-bold text-gray-100">{mockConnections.length}</p>
+                  <p className="text-muted-foreground text-sm">Total Connections</p>
+                  <p className="text-2xl font-bold text-foreground">{mockConnections.length}</p>
                 </div>
-                <Users className="h-8 w-8 text-gray-500" />
+                <Users className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Active Conversations</p>
-                  <p className="text-2xl font-bold text-gray-100">
+                  <p className="text-muted-foreground text-sm">Active Conversations</p>
+                  <p className="text-2xl font-bold text-foreground">
                     {mockConnections.filter(c => c.status === 'Active').length}
                   </p>
                 </div>
-                <MessageCircle className="h-8 w-8 text-gray-500" />
+                <MessageCircle className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">This Month</p>
-                  <p className="text-2xl font-bold text-gray-100">2</p>
+                  <p className="text-muted-foreground text-sm">This Month</p>
+                  <p className="text-2xl font-bold text-foreground">2</p>
                 </div>
-                <Calendar className="h-8 w-8 text-gray-500" />
+                <Calendar className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Connections List */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-gray-100">Your Connections</CardTitle>
+            <CardTitle className="text-foreground">Your Connections</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {mockConnections.map((connection) => (
-                <div key={connection.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <div key={connection.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border">
                   <div className="flex items-center space-x-4">
                     <Avatar className="w-12 h-12">
                       <AvatarImage 
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(connection.name)}&background=6b7280&color=ffffff&size=128`}
                         alt={connection.name}
                       />
-                      <AvatarFallback className="bg-gray-700 text-gray-300">
+                      <AvatarFallback className="bg-muted text-muted-foreground">
                         {connection.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-100">{connection.name}</h3>
+                        <h3 className="font-medium text-foreground">{connection.name}</h3>
                         <Badge 
                           variant={connection.status === 'Active' ? 'default' : 'secondary'}
                           className={connection.status === 'Active' 
-                            ? 'bg-gray-600 text-gray-100' 
-                            : 'bg-gray-700 text-gray-300'
+                            ? 'bg-accent text-accent-foreground' 
+                            : 'bg-muted text-muted-foreground'
                           }
                         >
                           {connection.status}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-300">{connection.title}</p>
-                      <p className="text-xs text-gray-400">{connection.location}</p>
+                      <p className="text-sm text-foreground">{connection.title}</p>
+                      <p className="text-xs text-muted-foreground">{connection.location}</p>
                       
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                         <span>Connected: {new Date(connection.connectionDate).toLocaleDateString()}</span>
                         <span>Last contact: {new Date(connection.lastContact).toLocaleDateString()}</span>
                         <span>{connection.mutualConnections} mutual connections</span>
@@ -148,7 +148,7 @@ function NetworkContent() {
                       
                       <div className="flex gap-1 mt-2">
                         {connection.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline" className="text-xs bg-gray-700 text-gray-300 border-gray-600">
+                          <Badge key={i} variant="outline" className="text-xs bg-muted/50 text-muted-foreground border-border">
                             {tag}
                           </Badge>
                         ))}
@@ -157,10 +157,10 @@ function NetworkContent() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="bg-gray-700 hover:bg-gray-600 text-gray-100 border-gray-600">
+                    <Button variant="outline" size="sm" className="bg-card hover:bg-accent text-foreground border-border">
                       <MessageCircle className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" className="bg-gray-700 hover:bg-gray-600 text-gray-100 border-gray-600">
+                    <Button variant="outline" size="sm" className="bg-card hover:bg-accent text-foreground border-border">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </div>
@@ -191,16 +191,16 @@ export default function NetworkPage() {
 
   if (!isLoaded || !isClient) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-gray-400">Redirecting...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Redirecting...</div>
       </div>
     )
   }

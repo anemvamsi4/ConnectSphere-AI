@@ -40,8 +40,8 @@ export default function DashboardNavigation() {
               className={cn(
                 "flex items-center gap-2",
                 isActive 
-                  ? "bg-gray-700 text-gray-100 hover:bg-gray-600" 
-                  : "text-gray-400 hover:text-gray-100 hover:bg-gray-800"
+                  ? "bg-accent text-accent-foreground hover:bg-accent/80" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
               <Icon className="h-4 w-4" />

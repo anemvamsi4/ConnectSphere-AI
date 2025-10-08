@@ -53,8 +53,8 @@ function DashboardContent() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-100">Dashboard</h1>
-          <p className="text-gray-400 mt-2">Continue your networking journey and connect with industry professionals</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Continue your networking journey and connect with industry professionals</p>
         </div>
 
         {/* Main Content Area */}
@@ -63,9 +63,9 @@ function DashboardContent() {
             <NetworkingForm onSearch={handleSearch} loading={loading} />
           </div>
 
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-gray-100 flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Generated Connections
               </CardTitle>
@@ -97,16 +97,16 @@ export default function Dashboard() {
 
   if (!isLoaded || !isClient) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-gray-400">Redirecting...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Redirecting...</div>
       </div>
     )
   }
