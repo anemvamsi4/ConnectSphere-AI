@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Logo } from '@/components/logo'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import React from 'react'
 
 export const HeroHeader = () => {
@@ -42,21 +43,34 @@ export const HeroHeader = () => {
                                 </ul>
                             </div>
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="sm">
-                                    <Link href="/login">
-                                        <span>login</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    size="sm">
-                                    <Link href="/login">
-                                        <span>Get Started</span>
-                                    </Link>
-                                </Button>
+                                <SignedOut>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        size="sm">
+                                        <Link href="/sign-in">
+                                            <span>Sign In</span>
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        size="sm">
+                                        <Link href="/sign-up">
+                                            <span>Get Started</span>
+                                        </Link>
+                                    </Button>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        size="sm">
+                                        <Link href="/dashboard">
+                                            <span>Dashboard</span>
+                                        </Link>
+                                    </Button>
+                                    <UserButton />
+                                </SignedIn>
                             </div>
                         </div>
                     </div>

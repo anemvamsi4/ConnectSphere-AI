@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
+import { ClerkProvider } from '@clerk/nextjs'
 // import { Footer } from "@/components/footer";
 import "./globals.css";
 
@@ -18,15 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${bricolage_grotesque.variable} antialiased min-h-screen flex flex-col`}
-      >
-        <div className="flex-1">
-          {children}
-        </div>
-        {/* <Footer /> */}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="dark">
+        <body
+          className={`${bricolage_grotesque.variable} antialiased min-h-screen flex flex-col`}
+        >
+          <div className="flex-1">
+            {children}
+          </div>
+          {/* <Footer /> */}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
