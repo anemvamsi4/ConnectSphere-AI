@@ -5,7 +5,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
 
 const bricolage_grotesque = Bricolage_Grotesque({
-  variable: "--font-bricolage-grotesque"
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"]
 });
 
 export const metadata: Metadata = {
