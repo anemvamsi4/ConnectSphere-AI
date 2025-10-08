@@ -3,15 +3,12 @@
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { UserButton } from '@clerk/nextjs'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import NetworkingForm from '@/components/networking/NetworkingForm'
 import ResultsList from '@/components/networking/ResultsList'
-import MiniAreaChart from '@/components/shared/MiniAreaChart'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 import { findPeople, generateMessagesBatch, PersonResult } from '@/lib/mockApi'
-import { Users, MessageCircle, CheckCircle, Target } from 'lucide-react'
-import DashboardNavigation from '@/components/navigation/DashboardNavigation'
+import { Target } from 'lucide-react'
 
 function DashboardContent() {
   const [loading, setLoading] = useState(false)
@@ -52,122 +49,33 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <header className="border-b border-gray-800">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold text-gray-100">Connect Sphere AI Dashboard</h1>
-            <UserButton />
-          </div>
-          <DashboardNavigation />
+    <div className="p-8">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-100">Dashboard</h1>
+          <p className="text-gray-400 mt-2">Continue your networking journey and connect with industry professionals</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-6 py-8">
-        <div className="space-y-6">
-          {/* Header with greeting */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-100">Welcome back! 👋</h1>
-              <p className="text-gray-400 mt-2">Continue your networking journey and connect with industry professionals</p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-gray-300">87%</div>
-              <div className="text-sm text-gray-500">Progress</div>
-            </div>
+
+        {/* Main Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <NetworkingForm onSearch={handleSearch} loading={loading} />
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Connections Made</p>
-                    <p className="text-2xl font-bold text-gray-100">24</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <Users className="h-6 w-6 text-gray-300" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <MiniAreaChart />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Messages Sent</p>
-                    <p className="text-2xl font-bold text-gray-100">18</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <MessageCircle className="h-6 w-6 text-gray-300" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <MiniAreaChart />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Responses</p>
-                    <p className="text-2xl font-bold text-gray-100">12</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="h-6 w-6 text-gray-300" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <MiniAreaChart />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Job Prospects</p>
-                    <p className="text-2xl font-bold text-gray-100">6</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <Target className="h-6 w-6 text-gray-300" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <MiniAreaChart />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <NetworkingForm onSearch={handleSearch} loading={loading} />
-            </div>
-
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-gray-100 flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Generated Connections
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResultsList results={results} loading={loading} />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="bg-gray-900 border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-gray-100 flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Generated Connections
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResultsList results={results} loading={loading} />
+            </CardContent>
+          </Card>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
@@ -203,5 +111,9 @@ export default function Dashboard() {
     )
   }
 
-  return <DashboardContent />
+  return (
+    <DashboardLayout>
+      <DashboardContent />
+    </DashboardLayout>
+  )
 }
