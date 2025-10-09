@@ -19,7 +19,9 @@ function copyToClipboard(text: string) {
   ta.select()
   try { 
     document.execCommand('copy') 
-  } catch (e) {}
+  } catch {
+    // Ignore copy errors
+  }
   ta.remove()
   return Promise.resolve()
 }

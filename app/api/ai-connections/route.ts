@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let finalPeople = people;
+    const finalPeople = people;
 
     // Messages are now generated directly in findPeopleWithAI, so we can skip the separate generation
     console.log('Connections with messages already generated');
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     message: 'AI Connections API is running',
     endpoints: {

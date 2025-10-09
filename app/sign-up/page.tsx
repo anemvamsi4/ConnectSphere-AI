@@ -21,6 +21,13 @@ import {
 import { Icons } from '@/components/icons'
 import { OnboardingDialog } from '@/components/onboarding-dialog'
 
+interface ClerkError {
+  errors?: Array<{
+    message: string;
+    code?: string;
+  }>;
+}
+
 const signUpSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -81,7 +88,7 @@ export default function SignUpPage() {
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
       setVerifying(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating account:', error)
     } finally {
       setIsLoading(false)
@@ -112,10 +119,10 @@ export default function SignUpPage() {
         // Don't set showOnboarding here, let the useEffect handle it
         // This prevents race conditions
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error verifying email:', error)
       // Handle "already signed in" error
-      if (error?.errors?.[0]?.message?.includes('already signed in')) {
+      if ((error as ClerkError)?.errors?.[0]?.message?.includes('already signed in')) {
         setVerifying(false)
         setShowOnboarding(true)
       }

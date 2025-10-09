@@ -10,7 +10,6 @@ import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Form,
   FormControl,
@@ -21,6 +20,13 @@ import {
 } from '@/components/ui/form'
 import { Icons } from '@/components/icons'
 
+interface ClerkError {
+  errors?: Array<{
+    message: string;
+    code?: string;
+  }>;
+}
+
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
@@ -28,7 +34,7 @@ const signInSchema = z.object({
 
 export default function SignInPage() {
   const { isLoaded, signIn, setActive } = useSignIn()
-  const { isSignedIn, user } = useUser()
+  const { isSignedIn } = useUser()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>('')
   const router = useRouter()
@@ -64,10 +70,10 @@ export default function SignInPage() {
         await setActive({ session: result.createdSessionId })
         router.push('/dashboard')
       }
-    } catch (error: any) {
-      console.error('Error:', error.errors?.[0]?.message)
+    } catch (error: unknown) {
+      console.error('Error:', (error as ClerkError).errors?.[0]?.message)
       
-      const errorMessage = error.errors?.[0]?.message || 'An error occurred during sign in'
+      const errorMessage = (error as ClerkError).errors?.[0]?.message || 'An error occurred during sign in'
       
       // Handle specific error cases
       if (errorMessage.includes('Session already exists')) {
@@ -95,9 +101,9 @@ export default function SignInPage() {
         redirectUrl: '/dashboard',
         redirectUrlComplete: '/dashboard',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error signing in with Google:', error)
-      const errorMessage = error.errors?.[0]?.message || 'Failed to sign in with Google'
+      const errorMessage = (error as ClerkError).errors?.[0]?.message || 'Failed to sign in with Google'
       if (errorMessage.includes('Session already exists')) {
         router.push('/dashboard')
       } else {
@@ -115,9 +121,9 @@ export default function SignInPage() {
         redirectUrl: '/dashboard',
         redirectUrlComplete: '/dashboard',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error signing in with GitHub:', error)
-      const errorMessage = error.errors?.[0]?.message || 'Failed to sign in with GitHub'
+      const errorMessage = (error as ClerkError).errors?.[0]?.message || 'Failed to sign in with GitHub'
       if (errorMessage.includes('Session already exists')) {
         router.push('/dashboard')
       } else {

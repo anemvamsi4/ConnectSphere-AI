@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -90,10 +89,9 @@ const interestDomains = [
 export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [personalData, setPersonalData] = useState<any>(null)
+  const [personalData, setPersonalData] = useState<Record<string, unknown> | null>(null)
   const [uploadedFile, setUploadedFile] = useState<{ name: string; path: string } | null>(null)
   const { user } = useUser()
-  const router = useRouter()
 
   const personalForm = useForm<z.infer<typeof personalDetailsSchema>>({
     resolver: zodResolver(personalDetailsSchema),
@@ -124,7 +122,8 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
     },
   })
 
-  const [newSkill, setNewSkill] = useState({ name: '', level: 'Beginner' as const })
+  type SkillLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
+  const [newSkill, setNewSkill] = useState<{ name: string; level: SkillLevel }>({ name: '', level: 'Beginner' })
 
   const addSkill = () => {
     if (newSkill.name.trim()) {
@@ -168,15 +167,15 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
           email: user.emailAddresses[0]?.emailAddress || '',
           first_name: user.firstName || '',
           last_name: user.lastName || '',
-          age: personalData.age,
-          gender: personalData.gender,
-          country: personalData.country,
-          city: personalData.city,
-          phone: personalData.phone,
-          linkedin: personalData.linkedin,
-          twitter: personalData.twitter,
-          github: personalData.github,
-          portfolio: personalData.portfolio,
+          age: personalData?.age,
+          gender: personalData?.gender,
+          country: personalData?.country,
+          city: personalData?.city,
+          phone: personalData?.phone,
+          linkedin: personalData?.linkedin,
+          twitter: personalData?.twitter,
+          github: personalData?.github,
+          portfolio: personalData?.portfolio,
         })
 
       if (profileError) throw profileError
@@ -296,7 +295,7 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
         <DialogHeader>
           <DialogTitle>Welcome to Connect Sphere AI!</DialogTitle>
           <DialogDescription>
-            Let's set up your profile to provide personalized networking recommendations.
+            Let&apos;s set up your profile to provide personalized networking recommendations.
           </DialogDescription>
           <Progress value={(step / 2) * 100} className="w-full" />
         </DialogHeader>
@@ -578,7 +577,7 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
                   />
                   <Select 
                     value={newSkill.level} 
-                    onValueChange={(value: any) => setNewSkill(prev => ({ ...prev, level: value }))}
+                    onValueChange={(value: SkillLevel) => setNewSkill(prev => ({ ...prev, level: value }))}
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue />

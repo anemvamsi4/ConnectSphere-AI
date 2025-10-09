@@ -113,7 +113,7 @@ class ApolloAPI {
     person_titles?: string[];
     person_locations?: string[];
     limit?: number;
-  }): Promise<any> {
+  }): Promise<unknown> {
     const response = await fetch(`${APOLLO_BASE_URL}/mixed_people/search`, {
       method: 'POST',
       headers: {
@@ -135,7 +135,7 @@ class ApolloAPI {
     return response.json();
   }
 
-  async getPersonByLinkedIn(linkedinUrl: string): Promise<any> {
+  async getPersonByLinkedIn(linkedinUrl: string): Promise<unknown> {
     const response = await fetch(`${APOLLO_BASE_URL}/people/match`, {
       method: 'POST',
       headers: {
@@ -286,7 +286,7 @@ class AIConnectionsGenerator {
     text = text.trim();
     
     // Find the main JSON object
-    let startIndex = text.indexOf('{');
+    const startIndex = text.indexOf('{');
     if (startIndex === -1) {
       throw new Error('No JSON object found in response');
     }
@@ -443,10 +443,11 @@ Generate 3 unique Indian professionals related to: ${input.role} at ${input.comp
       
       return message;
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating personalized message:', error);
       
-      if (error instanceof Error && (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'))) {
+      const err = error as Error;
+      if (err instanceof Error && (err.message.includes('quota') || err.message.includes('RESOURCE_EXHAUSTED'))) {
         console.log('Quota exceeded for message generation');
         throw new Error('AI service quota exceeded while generating messages. Please try again in a few minutes.');
       }
@@ -576,6 +577,22 @@ Write only the message, no quotes or extra text:`;
   }
 }
 
+interface ApolloPersonResult {
+  first_name?: string;
+  last_name?: string;
+  title?: string;
+  organization?: { name?: string };
+  city?: string;
+  state?: string;
+  linkedin_url?: string;
+  email?: string;
+  headline?: string;
+  summary?: string;
+  keywords?: string[];
+  photo_url?: string;
+  [key: string]: unknown;
+}
+
 // Main API functions
 export async function findPeople(input: SearchInput, userProfile?: UserProfile): Promise<PersonResult[]> {
   // Try Apollo API first if available
@@ -583,7 +600,7 @@ export async function findPeople(input: SearchInput, userProfile?: UserProfile):
     try {
       const apollo = new ApolloAPI(APOLLO_API_KEY);
       
-      let searchParams: any = {};
+      const searchParams: Record<string, unknown> = {};
 
       if (input.jobUrl) {
         // Extract company from job URL (simplified)
@@ -600,9 +617,9 @@ export async function findPeople(input: SearchInput, userProfile?: UserProfile):
         searchParams.person_locations = [input.location];
       }
 
-      const apolloResponse = await apollo.searchPeople(searchParams);
+      const apolloResponse = await apollo.searchPeople(searchParams) as { people?: ApolloPersonResult[] };
       
-      return apolloResponse.people?.map((person: any) => ({
+      return apolloResponse.people?.map((person: ApolloPersonResult) => ({
         name: `${person.first_name} ${person.last_name}`,
         title: person.title || 'Professional',
         company: person.organization?.name || 'Unknown',
@@ -931,7 +948,7 @@ function getRandomLastActive(): string {
   return options[Math.floor(Math.random() * options.length)];
 }
 
-function calculateConfidence(person: any, input: SearchInput): number {
+function calculateConfidence(person: ApolloPersonResult, input: SearchInput): number {
   let confidence = 50; // Base confidence
 
   // Higher confidence if we have contact info
