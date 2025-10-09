@@ -26,9 +26,10 @@ function copyToClipboard(text: string) {
 
 interface MessageCardProps {
   item: PersonResult
+  isMinimized?: boolean
 }
 
-export default function MessageCard({ item }: MessageCardProps) {
+export default function MessageCard({ item, isMinimized = false }: MessageCardProps) {
   const [copied, setCopied] = useState(false)
   const [showInsights, setShowInsights] = useState(false)
   const main = item.message
@@ -61,6 +62,82 @@ export default function MessageCard({ item }: MessageCardProps) {
     return 'text-muted-foreground'
   }
 
+  // Minimized compact view
+  if (isMinimized) {
+    return (
+      <Card className="bg-card/50 border border-border hover:border-accent/50 transition-all duration-300 ease-out group cursor-pointer hover:shadow-md transform hover:scale-[1.02]">
+        <CardContent className="p-4">
+          {/* Compact Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <Avatar className="w-10 h-10 border border-border transition-all duration-300 ease-out group-hover:border-accent/50">
+              <AvatarImage src={item.profileImage} alt={item.name} />
+              <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                {item.name.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-foreground text-sm truncate transition-colors duration-300 ease-out group-hover:text-accent-foreground">
+                {item.name}
+              </h3>
+              <p className="text-muted-foreground text-xs truncate">{item.title}</p>
+            </div>
+            <Badge variant="outline" className="text-xs bg-muted/50 text-foreground border-border shrink-0 transition-all duration-300 ease-out group-hover:bg-accent/20">
+              {item.connectionStrength}%
+            </Badge>
+          </div>
+
+          {/* Compact Metrics */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+            <span className="flex items-center gap-1 transition-colors duration-300 ease-out group-hover:text-foreground">
+              <Users className="h-3 w-3" />
+              {item.mutualConnections}
+            </span>
+            <span className="flex items-center gap-1 transition-colors duration-300 ease-out group-hover:text-foreground">
+              <Activity className="h-3 w-3" />
+              {item.responseRate}%
+            </span>
+            <span className="flex items-center gap-1 transition-colors duration-300 ease-out group-hover:text-foreground">
+              <Clock className="h-3 w-3" />
+              {item.lastActive.split(' ')[0]}
+            </span>
+          </div>
+
+          {/* Compact Message Preview */}
+          <div className="text-xs text-muted-foreground bg-muted/30 rounded p-2 mb-3 line-clamp-2 leading-relaxed transition-all duration-300 ease-out group-hover:bg-muted/50">
+            {main.substring(0, 100)}...
+          </div>
+
+          {/* Compact Action Buttons */}
+          <div className="flex gap-2">
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCopy()
+              }}
+              variant="outline"
+              size="sm"
+              className="flex-1 text-xs bg-card hover:bg-accent border-border transition-all duration-300 ease-out"
+            >
+              {copied ? '✓' : <Copy className="h-3 w-3" />}
+            </Button>
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation()
+                window.open(item.profileImage.replace('w=150', 'w=400'), '_blank')
+              }}
+              variant="outline"
+              size="sm"
+              className="bg-card hover:bg-accent border-border transition-all duration-300 ease-out"
+            >
+              <User className="h-3 w-3" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Full expanded view
   return (
     <Card className={`bg-card/50 border-2 ${getStrengthColor(item.connectionStrength)} hover:border-opacity-60 transition-all duration-300 group`}>
       <CardContent className="p-5">
