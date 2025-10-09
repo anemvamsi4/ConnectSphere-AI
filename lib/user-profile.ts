@@ -134,6 +134,9 @@ export async function updateUserEducation(userId: string, educationData: Partial
 }
 
 export async function updateUserSkills(userId: string, skills: { name: string; level: string }[]): Promise<boolean> {
+  console.log('Updating skills for user:', userId)
+  console.log('Skills to update:', skills)
+  
   // Delete existing skills
   const { error: deleteError } = await supabase
     .from('user_skills')
@@ -147,20 +150,46 @@ export async function updateUserSkills(userId: string, skills: { name: string; l
 
   // Insert new skills
   if (skills.length > 0) {
-    const skillsData = skills.map(skill => ({
+    // Validate and clean skills data
+    const validSkills = skills.filter(skill => 
+      skill.name && 
+      skill.name.trim() !== '' && 
+      skill.level && 
+      ['Beginner', 'Intermediate', 'Advanced', 'Expert'].includes(skill.level)
+    )
+    
+    console.log('Valid skills after filtering:', validSkills)
+    
+    if (validSkills.length === 0) {
+      console.log('No valid skills to insert')
+      return true
+    }
+
+    const skillsData = validSkills.map(skill => ({
       user_id: userId,
-      skill_name: skill.name,
+      skill_name: skill.name.trim(),
       proficiency_level: skill.level,
     }))
 
-    const { error: insertError } = await supabase
+    console.log('Skills data to insert:', skillsData)
+
+    const { data, error: insertError } = await supabase
       .from('user_skills')
       .insert(skillsData)
+      .select()
 
     if (insertError) {
       console.error('Error inserting new skills:', insertError)
+      console.error('Error details:', {
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        code: insertError.code
+      })
       return false
     }
+    
+    console.log('Successfully inserted skills:', data)
   }
 
   return true

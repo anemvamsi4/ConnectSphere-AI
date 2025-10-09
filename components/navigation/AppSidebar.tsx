@@ -47,19 +47,19 @@ const navigation = [
 const stats = [
   {
     name: 'Connections Made',
-    value: '24',
+    value: '3',
     icon: Users,
     color: 'text-muted-foreground'
   },
   {
     name: 'Messages Sent',
-    value: '18',
+    value: '0',
     icon: MessageCircle,
     color: 'text-muted-foreground'
   },
   {
     name: 'Responses',
-    value: '12',
+    value: '0',
     icon: CheckCircle,
     color: 'text-muted-foreground'
   }

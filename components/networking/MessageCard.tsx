@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { PersonResult } from '@/lib/aiConnectionsApi'
+import { PersonResult } from '@/lib/realApi'
 import { Copy, User, ChevronDown, Target, Users, Activity, Clock, GraduationCap } from 'lucide-react'
 
 function copyToClipboard(text: string) {
