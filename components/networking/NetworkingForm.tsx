@@ -16,6 +16,7 @@ interface NetworkingFormProps {
     jobUrl: string
     company: string
     role: string
+    location: string
     tone: string
     includeFollowUps: boolean
   }) => void
@@ -27,12 +28,14 @@ export default function NetworkingForm({ onSearch, loading }: NetworkingFormProp
   const [jobUrl, setJobUrl] = useState('')
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
+  const [location, setLocation] = useState('')
   const [tone, setTone] = useState('Formal')
   const [includeFollowUps, setIncludeFollowUps] = useState(true)
+  const [searchType, setSearchType] = useState<'manual' | 'jobUrl'>('manual')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    onSearch({ userBio, jobUrl, company, role, tone, includeFollowUps })
+    onSearch({ userBio, jobUrl, company, role, location, tone, includeFollowUps })
   }
 
   return (
@@ -58,40 +61,93 @@ export default function NetworkingForm({ onSearch, loading }: NetworkingFormProp
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="company" className="text-foreground">Target Company</Label>
-              <Input
-                id="company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
-                placeholder="Google, Microsoft, etc."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-foreground">Dream Role</Label>
-              <Input
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
-                placeholder="Software Engineer, PM, etc."
-                required
-              />
+          {/* Search Type Toggle */}
+          <div className="space-y-3">
+            <Label className="text-foreground text-sm font-medium">Search Method</Label>
+            <div className="flex gap-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="manual"
+                  name="searchType"
+                  value="manual"
+                  checked={searchType === 'manual'}
+                  onChange={(e) => setSearchType(e.target.value as 'manual')}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <Label htmlFor="manual" className="text-sm text-foreground cursor-pointer">
+                  Company & Role
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="jobUrl"
+                  name="searchType"
+                  value="jobUrl"
+                  checked={searchType === 'jobUrl'}
+                  onChange={(e) => setSearchType(e.target.value as 'jobUrl')}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <Label htmlFor="jobUrl" className="text-sm text-foreground cursor-pointer">
+                  Job Posting URL
+                </Label>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="jobUrl" className="text-foreground">Job Posting URL (optional)</Label>
-            <Input
-              id="jobUrl"
-              value={jobUrl}
-              onChange={(e) => setJobUrl(e.target.value)}
-              placeholder="https://careers.company.com/job..."
-              className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
-            />
-          </div>
+          {/* Conditional Search Fields */}
+          {searchType === 'manual' ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="company" className="text-foreground">Target Company</Label>
+                  <Input
+                    id="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
+                    placeholder="Google, Microsoft, etc."
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role" className="text-foreground">Dream Role</Label>
+                  <Input
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
+                    placeholder="Software Engineer, PM, etc."
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location" className="text-foreground">Location (Optional)</Label>
+                <Input
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
+                  placeholder="San Francisco, New York, Remote..."
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="jobUrl" className="text-foreground">Job Posting URL</Label>
+              <Input
+                id="jobUrl"
+                value={jobUrl}
+                onChange={(e) => setJobUrl(e.target.value)}
+                className="bg-background border-border text-foreground placeholder-muted-foreground focus:border-ring"
+                placeholder="https://careers.company.com/job..."
+                type="url"
+                required
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -104,7 +160,6 @@ export default function NetworkingForm({ onSearch, loading }: NetworkingFormProp
                   <SelectItem value="Formal" className="text-foreground focus:bg-accent">Formal</SelectItem>
                   <SelectItem value="Casual" className="text-foreground focus:bg-accent">Casual</SelectItem>
                   <SelectItem value="Enthusiastic" className="text-foreground focus:bg-accent">Enthusiastic</SelectItem>
-                  <SelectItem value="Direct" className="text-foreground focus:bg-accent">Direct</SelectItem>
                 </SelectContent>
               </Select>
             </div>

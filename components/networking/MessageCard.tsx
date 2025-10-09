@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { PersonResult } from '@/lib/mockApi'
+import { PersonResult } from '@/lib/aiConnectionsApi'
 import { Copy, User, ChevronDown, Target, Users, Activity, Clock, GraduationCap } from 'lucide-react'
 
 function copyToClipboard(text: string) {
@@ -32,8 +32,16 @@ interface MessageCardProps {
 export default function MessageCard({ item, isMinimized = false }: MessageCardProps) {
   const [copied, setCopied] = useState(false)
   const [showInsights, setShowInsights] = useState(false)
-  const main = item.message
+  const main = item.message || 'No message generated'
   const followUps = item.followUpSequence || []
+
+  // Debug logging
+  console.log('MessageCard received item:', {
+    name: item.name,
+    message: item.message,
+    messageLength: item.message?.length || 0,
+    hasMessage: !!item.message
+  });
 
   async function handleCopy() {
     await copyToClipboard(main)
@@ -80,6 +88,7 @@ export default function MessageCard({ item, isMinimized = false }: MessageCardPr
                 {item.name}
               </h3>
               <p className="text-muted-foreground text-xs truncate">{item.title}</p>
+              <p className="text-muted-foreground text-xs truncate opacity-75">{item.company}</p>
             </div>
             <Badge variant="outline" className="text-xs bg-muted/50 text-foreground border-border shrink-0 transition-all duration-300 ease-out group-hover:bg-accent/20">
               {item.connectionStrength}%
@@ -165,7 +174,8 @@ export default function MessageCard({ item, isMinimized = false }: MessageCardPr
                 {item.name}
               </h3>
               <p className="text-muted-foreground text-sm">{item.title}</p>
-              <p className="text-muted-foreground text-xs flex items-center gap-1">
+              <p className="text-muted-foreground text-sm font-medium">{item.company}</p>
+              <p className="text-muted-foreground text-xs flex items-center gap-1 mt-1">
                 <span>📍</span> {item.location}
               </p>
             </div>
@@ -217,7 +227,13 @@ export default function MessageCard({ item, isMinimized = false }: MessageCardPr
         {/* Generated Message */}
         <div className="mb-4">
           <div className="text-sm text-foreground bg-muted/70 rounded-lg p-4 border-l-4 border-accent leading-relaxed">
-            {main}
+            {main === 'No message generated' ? (
+              <div className="text-muted-foreground italic">
+                <span className="animate-pulse">⚡</span> Personalized message not available
+              </div>
+            ) : (
+              main
+            )}
           </div>
         </div>
 
@@ -303,7 +319,7 @@ export default function MessageCard({ item, isMinimized = false }: MessageCardPr
               <ChevronDown className="ml-auto h-4 w-4" />
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3 space-y-3">
-              {followUps.map((followUp, i) => (
+              {followUps.map((followUp: string, i: number) => (
                 <div key={i} className="bg-muted/50 rounded-lg p-3 border-l-2 border-accent">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="secondary" className="bg-muted text-foreground text-xs">
@@ -329,7 +345,7 @@ export default function MessageCard({ item, isMinimized = false }: MessageCardPr
 
         {/* Interests Tags */}
         <div className="flex flex-wrap gap-1 mt-3">
-          {item.interests && item.interests.slice(0, 3).map((interest, i) => (
+          {item.interests && item.interests.slice(0, 3).map((interest: string, i: number) => (
             <Badge 
               key={i} 
               variant="outline"

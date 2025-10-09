@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSignIn } from '@clerk/nextjs'
+import { useSignIn, useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,8 +28,17 @@ const signInSchema = z.object({
 
 export default function SignInPage() {
   const { isLoaded, signIn, setActive } = useSignIn()
+  const { isSignedIn, user } = useUser()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string>('')
   const router = useRouter()
+
+  // Redirect if user is already signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard')
+    }
+  }, [isLoaded, isSignedIn, router])
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -43,6 +52,7 @@ export default function SignInPage() {
     if (!isLoaded || !signIn || !setActive) return
 
     setIsLoading(true)
+    setError('') // Clear previous errors
 
     try {
       const result = await signIn.create({
@@ -56,6 +66,21 @@ export default function SignInPage() {
       }
     } catch (error: any) {
       console.error('Error:', error.errors?.[0]?.message)
+      
+      const errorMessage = error.errors?.[0]?.message || 'An error occurred during sign in'
+      
+      // Handle specific error cases
+      if (errorMessage.includes('Session already exists')) {
+        // User is already signed in, redirect to dashboard
+        router.push('/dashboard')
+        return
+      } else if (errorMessage.includes('Invalid email or password')) {
+        setError('Invalid email or password. Please check your credentials.')
+      } else if (errorMessage.includes('Too many requests')) {
+        setError('Too many sign-in attempts. Please try again later.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -63,28 +88,63 @@ export default function SignInPage() {
 
   async function signInWithGoogle() {
     if (!signIn) return
+    setError('') // Clear previous errors
     try {
       await signIn.authenticateWithRedirect({
         strategy: 'oauth_google',
         redirectUrl: '/dashboard',
         redirectUrlComplete: '/dashboard',
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with Google:', error)
+      const errorMessage = error.errors?.[0]?.message || 'Failed to sign in with Google'
+      if (errorMessage.includes('Session already exists')) {
+        router.push('/dashboard')
+      } else {
+        setError(errorMessage)
+      }
     }
   }
 
   async function signInWithGitHub() {
     if (!signIn) return
+    setError('') // Clear previous errors
     try {
       await signIn.authenticateWithRedirect({
         strategy: 'oauth_github',
         redirectUrl: '/dashboard',
         redirectUrlComplete: '/dashboard',
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with GitHub:', error)
+      const errorMessage = error.errors?.[0]?.message || 'Failed to sign in with GitHub'
+      if (errorMessage.includes('Session already exists')) {
+        router.push('/dashboard')
+      } else {
+        setError(errorMessage)
+      }
     }
+  }
+
+  // Show loading while checking authentication
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <Icons.spinner className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  // Don't render sign-in form if user is already signed in
+  if (isSignedIn) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg">Already signed in. Redirecting...</p>
+          <Icons.spinner className="h-6 w-6 animate-spin mx-auto mt-2" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -138,6 +198,11 @@ export default function SignInPage() {
                   </FormItem>
                 )}
               />
+              {error && (
+                <div className="p-3 rounded-md bg-destructive/15 border border-destructive/50">
+                  <p className="text-sm text-destructive font-medium">{error}</p>
+                </div>
+              )}
               <Button disabled={isLoading} className="w-full">
                 {isLoading && (
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />

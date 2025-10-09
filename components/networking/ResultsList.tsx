@@ -1,6 +1,6 @@
 "use client"
 
-import { PersonResult } from '@/lib/mockApi'
+import { PersonResult } from '@/lib/aiConnectionsApi'
 import MessageCard from './MessageCard'
 import { Card, CardContent } from "@/components/ui/card"
 

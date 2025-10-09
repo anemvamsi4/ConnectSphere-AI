@@ -45,6 +45,11 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     .single()
 
   if (error) {
+    // If no profile exists (PGRST116), that's expected for new users
+    if (error.code === 'PGRST116') {
+      console.log('No user profile found for user:', userId)
+      return null
+    }
     console.error('Error fetching user profile:', error)
     return null
   }
@@ -60,6 +65,11 @@ export async function getUserEducation(userId: string): Promise<UserEducation | 
     .single()
 
   if (error) {
+    // If no education record exists (PGRST116), that's expected for new users
+    if (error.code === 'PGRST116') {
+      console.log('No user education found for user:', userId)
+      return null
+    }
     console.error('Error fetching user education:', error)
     return null
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from '@clerk/nextjs'
+import { useAuth, useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,19 +8,71 @@ import { Button } from "@/components/ui/button"
 import NetworkingForm from '@/components/networking/NetworkingForm'
 import ResultsList from '@/components/networking/ResultsList'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { findPeople, generateMessagesBatch, PersonResult } from '@/lib/mockApi'
+import { UserProfile } from '@/lib/realApi'
+import { getUserProfile, getUserEducation, getUserSkills, getUserInterests } from '@/lib/user-profile'
 import { Target, Edit3 } from 'lucide-react'
+import { toast } from 'sonner'
+
+// Define PersonResult type locally
+interface PersonResult {
+  id: string;
+  name: string;
+  title: string;
+  company: string;
+  location: string;
+  profileImage: string;
+  profileUrl: string;
+  email?: string;
+  linkedinUrl?: string;
+  headline?: string;
+  summary?: string;
+  experience?: string[];
+  education?: string[];
+  skills?: string[];
+  message: string;
+  confidence: number;
+  isAlumni: boolean;
+  connectionStrength: number;
+  mutualConnections: number;
+  responseRate: number;
+  lastActive: string;
+  interests?: string[];
+  followUpSequence?: string[];
+  recentActivity?: string;
+}
 
 function DashboardContent() {
+  const { isLoaded, isSignedIn } = useAuth()
+  const { user } = useUser()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<PersonResult[]>([])
   const [isFormMinimized, setIsFormMinimized] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  // Show loading state while checking authentication
+  if (!isLoaded) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+  }
+
+  if (!isSignedIn) {
+    return null // Will redirect in useEffect
+  }
 
   async function handleSearch(input: {
     company: string
     role: string
+    location: string
     userBio: string
+    jobUrl: string
     tone: string
     includeFollowUps: boolean
   }) {
@@ -29,23 +81,103 @@ function DashboardContent() {
     setHasSearched(true)
     
     try {
-      const people = await findPeople({ 
-        company: input.company, 
-        role: input.role,
-        bio: input.userBio 
+      // Get user profile data
+      if (!user) {
+        toast.error('Please sign in to search for connections')
+        setLoading(false)
+        return
+      }
+
+      const currentUserProfile = await getCurrentUserProfile()
+      let profileToUse: UserProfile
+
+      if (!currentUserProfile) {
+        // Create a basic profile from Clerk user data for first-time users
+        profileToUse = {
+          firstName: user.firstName || 'User',
+          lastName: user.lastName || '',
+          age: 25, // Default age
+          location: 'India', // Default location
+          education: {
+            degree: 'Bachelor of Technology',
+            institution: 'University',
+            fieldOfStudy: 'Computer Science'
+          },
+          skills: ['Communication', 'Problem Solving'],
+          interests: ['Technology', 'Professional Growth'],
+          socialLinks: {
+            linkedin: '',
+            github: '',
+            portfolio: ''
+          }
+        }
+        
+        console.log('Using basic profile for new user:', profileToUse)
+        toast.info('Using basic profile. Complete your profile in Settings for better matches.')
+      } else {
+        profileToUse = currentUserProfile
+      }
+
+      // Use AI-powered connection generation via API route
+      console.log('About to make API call to /api/ai-connections')
+      console.log('Request payload:', {
+        searchInput: input,
+        userProfile: profileToUse
       })
+
+      let response: Response
+      try {
+        response = await fetch('/api/ai-connections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            searchInput: {
+              company: input.company,
+              role: input.role,
+              location: input.location,
+              jobUrl: input.jobUrl,
+              userBio: input.userBio,
+              tone: input.tone,
+              includeFollowUps: input.includeFollowUps
+            },
+            userProfile: profileToUse
+          })
+        })
+      } catch (fetchError) {
+        console.error('Fetch request failed:', fetchError)
+        throw new Error(`Network error: Unable to connect to the API. Please check if the server is running. (${fetchError instanceof Error ? fetchError.message : 'Unknown error'})`)
+      }
+
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to generate connections'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError)
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        throw new Error(errorMessage)
+      }
+
+      const { connections: people } = await response.json()
       
       console.log('People found:', people)
       
-      const messages = await generateMessagesBatch(
-        people, 
-        input.userBio, 
-        input.tone.toLowerCase(), 
-        input.includeFollowUps
-      )
-      
-      console.log('Messages generated:', messages)
-      setResults(messages)
+      if (people.length === 0) {
+        toast.error('No connections found. Try adjusting your search criteria.')
+        setResults([])
+        setLoading(false)
+        return
+      }
+
+      // Results already include personalized messages
+      setResults(people)
       
       // Minimize form after successful search with smoother timing
       setTimeout(() => {
@@ -53,9 +185,60 @@ function DashboardContent() {
       }, 1000)
     } catch (error) {
       console.error('Error during search:', error)
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
+      console.error('Error message:', error instanceof Error ? error.message : String(error))
+      
+      let errorMessage = 'Search failed. Please try again.'
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = 'Network error: Unable to connect to the server. Please check your connection and try again.'
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
       setResults([])
     }
     setLoading(false)
+  }
+
+  async function getCurrentUserProfile(): Promise<UserProfile | null> {
+    try {
+      if (!user) return null
+
+      const [profileData, educationData, skillsData, interestsData] = await Promise.all([
+        getUserProfile(user.id),
+        getUserEducation(user.id),
+        getUserSkills(user.id),
+        getUserInterests(user.id)
+      ])
+
+      if (!profileData || !educationData) {
+        return null
+      }
+
+      return {
+        firstName: profileData.first_name,
+        lastName: profileData.last_name,
+        age: profileData.age,
+        location: `${profileData.city}, ${profileData.country}`,
+        education: {
+          degree: educationData.degree,
+          institution: educationData.institution,
+          fieldOfStudy: educationData.field_of_study
+        },
+        skills: skillsData.map(skill => skill.skill_name),
+        interests: interestsData.map(interest => interest.domain),
+        socialLinks: {
+          linkedin: profileData.linkedin,
+          github: profileData.github,
+          portfolio: profileData.portfolio
+        }
+      }
+    } catch (error) {
+      console.error('Error getting user profile:', error)
+      return null
+    }
   }
 
   const handleExpandForm = () => {
@@ -126,36 +309,6 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  const { isLoaded, userId } = useAuth()
-  const router = useRouter()
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    if (isLoaded && !userId && isClient) {
-      router.push('/sign-in')
-    }
-  }, [isLoaded, userId, router, isClient])
-
-  if (!isLoaded || !isClient) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
-
-  if (!userId) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Redirecting...</div>
-      </div>
-    )
-  }
-
   return (
     <DashboardLayout>
       <DashboardContent />
